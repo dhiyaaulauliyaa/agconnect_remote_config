@@ -40,7 +40,7 @@ class AGCRemoteConfig {
   /// 设置本地默认参数
   Future<void> applyDefaults(Map<String, dynamic> defaults) {
     Map<String, String> map = Map();
-    defaults?.forEach((String key, dynamic value) {
+    defaults.forEach((String key, dynamic value) {
       map[key] = value.toString();
     });
     return _channel
@@ -68,13 +68,11 @@ class AGCRemoteConfig {
 
   /// 返回Key对应的String类型的Value值
   Future<String> getValue(String key) {
-    assert(key != null);
     return _channel.invokeMethod('getValue', <String, String>{'key': key});
   }
 
   /// 返回Key对应的来源
   Future<RemoteConfigSource> getSource(String key) {
-    assert(key != null);
     return _channel
         .invokeMethod('getSource', <String, String>{'key': key}).then((value) {
       switch (value) {

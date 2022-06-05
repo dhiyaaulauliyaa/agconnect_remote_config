@@ -42,9 +42,6 @@ class RemoteConfigException implements Exception {
 
   @override
   String toString() {
-    if (throttleEndTimeMillis != null) {
-      return "Exception: code : $code , message: $message. throttle time $throttleEndTimeMillis milliseconds";
-    }
-    return "Exception: code : $code , message: $message.";
+    return "Exception: code : $code , message: $message. throttle time $throttleEndTimeMillis milliseconds";
   }
 }
