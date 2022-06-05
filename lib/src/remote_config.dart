@@ -23,28 +23,30 @@ import 'package:flutter/services.dart';
 enum RemoteConfigSource {
   /// 获取的value值是类型初始值
   initial,
+
   /// 获取的value值是本地默认值
   local,
+
   /// 获取的value值是云端值
   remote,
 }
 
+const RemoteConfigErrorCodeUnknown = 999;
+
 /// AGConnect RemoteConfig SDK 入口类
 class AGCRemoteConfig {
-  static const MethodChannel _channel =
-  const MethodChannel('com.huawei.flutter/agconnect_remote_config');
+  static const MethodChannel _channel = const MethodChannel('com.huawei.flutter/agconnect_remote_config');
 
   /// 获取AGCRemoteConfig实例
   static final AGCRemoteConfig instance = AGCRemoteConfig();
 
   /// 设置本地默认参数
-  Future<void> applyDefaults(Map<String, dynamic> defaults) {
+  Future<void> applyDefaults(Map<String, dynamic>? defaults) {
     Map<String, String> map = Map();
-    defaults.forEach((String key, dynamic value) {
+    defaults?.forEach((String key, dynamic value) {
       map[key] = value.toString();
     });
-    return _channel
-        .invokeMethod('applyDefaults', <String, dynamic>{'defaults': map});
+    return _channel.invokeMethod('applyDefaults', <String, dynamic>{'defaults': map});
   }
 
   /// 生效最近一次云端拉取的配置数据
@@ -53,28 +55,28 @@ class AGCRemoteConfig {
   }
 
   /// 从云端拉取最新的配置数据，拉取默认间隔12小时，12小时内返回缓存数据
-  Future<void> fetch({int intervalSeconds}) {
-    return _channel.invokeMethod('fetch',
-        <String, int>{'intervalSeconds': intervalSeconds}).catchError((e) {
-      int code = int.tryParse(e.code);
-      int throttleEndTime =
-      e.details != null ? e.details['throttleEndTime'] : null;
-      throw RemoteConfigException(
-          code: code,
-          message: e.message,
-          throttleEndTimeMillis: throttleEndTime);
+  Future<void> fetch({int? intervalSeconds}) {
+    if (intervalSeconds == null) {
+      intervalSeconds = 12 * 60 * 60;
+    }
+    return _channel.invokeMethod('fetch', <String, int>{'intervalSeconds': intervalSeconds}).catchError((e) {
+      int? code = int.tryParse(e.code);
+      if (code == null) {
+        code = RemoteConfigErrorCodeUnknown;
+      }
+      int throttleEndTime = e.details != null ? e.details['throttleEndTime'] : null;
+      throw RemoteConfigException(code: code, message: e.message, throttleEndTimeMillis: throttleEndTime);
     });
   }
 
   /// 返回Key对应的String类型的Value值
-  Future<String> getValue(String key) {
+  Future<String?> getValue(String key) {
     return _channel.invokeMethod('getValue', <String, String>{'key': key});
   }
 
   /// 返回Key对应的来源
-  Future<RemoteConfigSource> getSource(String key) {
-    return _channel
-        .invokeMethod('getSource', <String, String>{'key': key}).then((value) {
+  Future<RemoteConfigSource?> getSource(String key) {
+    return _channel.invokeMethod('getSource', <String, String>{'key': key}).then((value) {
       switch (value) {
         case 0:
           return RemoteConfigSource.initial;
@@ -89,7 +91,7 @@ class AGCRemoteConfig {
   }
 
   /// 返回默认值和云端值合并后的所有值
-  Future<Map> getMergedAll() {
+  Future<Map?> getMergedAll() {
     return _channel.invokeMethod('getMergedAll');
   }
 
@@ -101,8 +103,9 @@ class AGCRemoteConfig {
   /// 设置开发者模式，将不限制客户端获取数据的次数，云测仍将进行流控
   /// 仅支持Android
   Future<void> setDeveloperMode(bool isDeveloperMode) {
-    if(Platform.isIOS) {
-      print('The setDeveloperMode method only supports Android, please refer to the development guide to set the developer mode on iOS.');
+    if (Platform.isIOS) {
+      print(
+          'The setDeveloperMode method only supports Android, please refer to the development guide to set the developer mode on iOS.');
     }
     return _channel.invokeMethod('setDeveloperMode', <String, bool>{'mode': isDeveloperMode});
   }

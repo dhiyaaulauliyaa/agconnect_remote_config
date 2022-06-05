@@ -29,7 +29,7 @@ class RemoteConfigException implements Exception {
   /// 响应数据未改变
   static const int RemoteConfigErrorCodeDataNotModified = 0x0c2a3001;
 
-  RemoteConfigException({this.code, this.message, this.throttleEndTimeMillis});
+  RemoteConfigException({required this.code, required this.message, this.throttleEndTimeMillis});
 
   /// 错误码
   final int code;
@@ -38,10 +38,14 @@ class RemoteConfigException implements Exception {
   final String message;
 
   /// 限流时间，单位为毫秒
-  final int throttleEndTimeMillis;
+  final int? throttleEndTimeMillis;
 
   @override
   String toString() {
-    return "Exception: code : $code , message: $message. throttle time $throttleEndTimeMillis milliseconds";
+    if (throttleEndTimeMillis != null) {
+      return 'RemoteConfigException{code: $code, message: $message, throttleEndTimeMillis: $throttleEndTimeMillis}';
+    } else {
+      return 'RemoteConfigException{code: $code, message: $message}';
+    }
   }
 }
