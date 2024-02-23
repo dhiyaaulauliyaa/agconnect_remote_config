@@ -1,5 +1,5 @@
 /*
- * Copyright 2020. Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright 2020-2023. Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,38 +14,37 @@
  * limitations under the License.
  */
 
+/// Error Codes of the Remote Configuration SDK
 class RemoteConfigException implements Exception {
-  /// Remote Config SDK的错误码
 
-  /// 受到本地流控,请稍后重试
+  /// Network Error Please try again later
   static const int RemoteConfigErrorCodeFetchThrottled = 1;
 
-  /// 系统错误，请联系华为技术人员
+  /// System error. Contact Huawei technical support.
   static const int RemoteConfigErrorCodeUnknown = 0x0c2a0001;
 
-  /// 应用未配置参数条件
+  /// No parameter condition is configured for the application.
   static const int RemoteConfigErrorCodeRcsConfigEmpty = 0x0c2a0004;
 
-  /// 响应数据未改变
+  /// The response data is not changed.
   static const int RemoteConfigErrorCodeDataNotModified = 0x0c2a3001;
 
-  RemoteConfigException({required this.code, required this.message, this.throttleEndTimeMillis});
+  RemoteConfigException({this.code, this.message, this.throttleEndTimeMillis});
 
-  /// 错误码
-  final int code;
+  /// Error Code
+  final int? code;
 
-  /// 错误描述
-  final String message;
+  /// Error Description
+  final String? message;
 
-  /// 限流时间，单位为毫秒
+  /// Current limiting time, in milliseconds.
   final int? throttleEndTimeMillis;
 
   @override
   String toString() {
     if (throttleEndTimeMillis != null) {
-      return 'RemoteConfigException{code: $code, message: $message, throttleEndTimeMillis: $throttleEndTimeMillis}';
-    } else {
-      return 'RemoteConfigException{code: $code, message: $message}';
+      return "Exception: code : $code , message: $message. throttle time $throttleEndTimeMillis milliseconds";
     }
+    return "Exception: code : $code , message: $message.";
   }
 }

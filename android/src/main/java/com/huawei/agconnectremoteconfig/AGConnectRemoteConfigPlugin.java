@@ -1,5 +1,5 @@
 /*
- * Copyright 2020. Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright 2021-2023. Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -129,6 +129,14 @@ public class AGConnectRemoteConfigPlugin implements FlutterPlugin, MethodCallHan
             boolean isDeveloperMode = mode != null ? mode.booleanValue() : false;
             AGConnectConfig.getInstance().setDeveloperMode(isDeveloperMode);
             result.success(null);
+        } else if (call.method.equals("setCustomAttributes")) {
+            Map<String, Map<String, String>> arguments = call.arguments();
+            Map<String, String> map = arguments.get("customAttributes");
+            AGConnectConfig.getInstance().setCustomAttributes(map);
+            result.success(null);
+        } else if (call.method.equals("getCustomAttributes")) {
+            Map value = AGConnectConfig.getInstance().getCustomAttributes();
+            result.success(value);
         } else {
             result.notImplemented();
         }

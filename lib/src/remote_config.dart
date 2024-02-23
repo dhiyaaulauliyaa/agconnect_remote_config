@@ -1,5 +1,5 @@
 /*
- * Copyright 2020. Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright 2020-2023. Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,94 +19,120 @@ import 'dart:io';
 import 'package:agconnect_remote_config/src/remote_config_exception.dart';
 import 'package:flutter/services.dart';
 
-/// 远程配置获取的value值的来源
+
+///Source of the value obtained from the remote configuration.
 enum RemoteConfigSource {
-  /// 获取的value值是类型初始值
+  /// The obtained value is the initial value of the type.
   initial,
 
-  /// 获取的value值是本地默认值
+  /// The obtained value is the local default value.
   local,
 
-  /// 获取的value值是云端值
+  /// The obtained value is a cloud value.
   remote,
 }
 
-const RemoteConfigErrorCodeUnknown = 999;
-
-/// AGConnect RemoteConfig SDK 入口类
+/// AGConnect RemoteConfig SDK entry class
 class AGCRemoteConfig {
-  static const MethodChannel _channel = const MethodChannel('com.huawei.flutter/agconnect_remote_config');
+  static const MethodChannel _channel =
+  const MethodChannel('com.huawei.flutter/agconnect_remote_config');
 
-  /// 获取AGCRemoteConfig实例
+  /// Obtain AGCRemoteConfig instance
   static final AGCRemoteConfig instance = AGCRemoteConfig();
 
-  /// 设置本地默认参数
+  /// Setting Local Default Parameters
   Future<void> applyDefaults(Map<String, dynamic>? defaults) {
     Map<String, String> map = Map();
     defaults?.forEach((String key, dynamic value) {
       map[key] = value.toString();
     });
-    return _channel.invokeMethod('applyDefaults', <String, dynamic>{'defaults': map});
+    return _channel
+        .invokeMethod('applyDefaults', <String, dynamic>{'defaults': map});
   }
 
-  /// 生效最近一次云端拉取的配置数据
+  /// Return to Obtain Custom Attributes
+  Future<Map?> getCustomAttributes() {
+    return _channel.invokeMethod('getCustomAttributes');
+  }
+
+  /// Setting Custom Attribute Parameters
+  Future<void> setCustomAttributes(Map<String, dynamic>? customAttributes) {
+    Map<String, String> map = Map();
+    customAttributes?.forEach((String key, dynamic value) {
+      map[key] = value.toString();
+    });
+    return _channel
+        .invokeMethod(
+        'setCustomAttributes', <String, dynamic>{'customAttributes': map});
+  }
+
+  /// Make the configuration data obtained from the cloud last time take effect.
   Future<void> applyLastFetched() {
     return _channel.invokeMethod('applyLastFetched');
   }
 
-  /// 从云端拉取最新的配置数据，拉取默认间隔12小时，12小时内返回缓存数据
-  Future<void> fetch({int? intervalSeconds}) {
-    if (intervalSeconds == null) {
-      intervalSeconds = 12 * 60 * 60;
+  /// Obtain the latest configuration data from the cloud. The default interval is 12 hours. The cached data is returned within 12 hours.
+  Future<void> fetch({int? intervalSeconds}) async {
+    try {
+      await _channel.invokeMethod('fetch',
+          <String, int?>{'intervalSeconds': intervalSeconds});
     }
-    return _channel.invokeMethod('fetch', <String, int>{'intervalSeconds': intervalSeconds}).catchError((e) {
+    on PlatformException catch (e) {
       int? code = int.tryParse(e.code);
-      if (code == null) {
-        code = RemoteConfigErrorCodeUnknown;
-      }
-      int throttleEndTime = e.details != null ? e.details['throttleEndTime'] : null;
-      throw RemoteConfigException(code: code, message: e.message, throttleEndTimeMillis: throttleEndTime);
-    });
+      int? throttleEndTime =
+      e.details != null ? e.details['throttleEndTime'] : null;
+      throw RemoteConfigException(
+          code: code,
+          message: e.message,
+          throttleEndTimeMillis: throttleEndTime);
+    }
+    on MissingPluginException catch(e){
+      throw RemoteConfigException(
+          code: 0x0c2a0001,
+          message: e.message,
+          throttleEndTimeMillis: 0);
+    }
   }
 
-  /// 返回Key对应的String类型的Value值
+
+  /// Returns the value of the String type corresponding to the key.
   Future<String?> getValue(String key) {
     return _channel.invokeMethod('getValue', <String, String>{'key': key});
   }
 
-  /// 返回Key对应的来源
-  Future<RemoteConfigSource?> getSource(String key) {
-    return _channel.invokeMethod('getSource', <String, String>{'key': key}).then((value) {
-      switch (value) {
-        case 0:
-          return RemoteConfigSource.initial;
-        case 1:
-          return RemoteConfigSource.local;
-        case 2:
-          return RemoteConfigSource.remote;
-        default:
-          return null;
-      }
-    });
+  /// Return the source of the key.
+  Future<RemoteConfigSource?> getSource(String key) async {
+    dynamic value = await _channel
+        .invokeMethod('getSource', <String, String>{'key': key});
+    switch (value) {
+      case 0:
+        return RemoteConfigSource.initial;
+      case 1:
+        return RemoteConfigSource.local;
+      case 2:
+        return RemoteConfigSource.remote;
+      default:
+        return null;
+    }
   }
 
-  /// 返回默认值和云端值合并后的所有值
+  /// Returns all values after the combination of default values and cloud values.
   Future<Map?> getMergedAll() {
     return _channel.invokeMethod('getMergedAll');
   }
 
-  /// 清除所有的缓存数据，包括从云测拉取的数据和传入的默认值
+  /// Clears all cached data, including data pulled from the cloud and default values.
   Future<void> clearAll() {
     return _channel.invokeMethod('clearAll');
   }
 
-  /// 设置开发者模式，将不限制客户端获取数据的次数，云测仍将进行流控
-  /// 仅支持Android
+  /// If the developer mode is set, the number of times that the client can obtain data is not limited, and the cloud test system still performs flow control.(Android only)
   Future<void> setDeveloperMode(bool isDeveloperMode) {
     if (Platform.isIOS) {
       print(
           'The setDeveloperMode method only supports Android, please refer to the development guide to set the developer mode on iOS.');
     }
-    return _channel.invokeMethod('setDeveloperMode', <String, bool>{'mode': isDeveloperMode});
+    return _channel.invokeMethod(
+        'setDeveloperMode', <String, bool>{'mode': isDeveloperMode});
   }
 }

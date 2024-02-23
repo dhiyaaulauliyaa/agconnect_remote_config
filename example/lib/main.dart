@@ -21,22 +21,26 @@ import 'package:flutter/material.dart';
 import 'package:agconnect_remote_config/agconnect_remote_config.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: HomePage());
+    return const MaterialApp(home: HomePage());
   }
 }
 
 class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
@@ -46,18 +50,27 @@ class _HomePageState extends State<HomePage> {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => PageModeOne(), fullscreenDialog: true));
+            builder: (context) => const PageModeOne(), fullscreenDialog: true));
   }
 
   _buttonTwoClicked() {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (context) => PageModeTwo(), fullscreenDialog: true));
+            builder: (context) => const PageModeTwo(), fullscreenDialog: true));
   }
 
   _clearData() async {
     await AGCRemoteConfig.instance.clearAll();
+  }
+
+  _buttonCustomClicked() async {
+    await AGCRemoteConfig.instance.setCustomAttributes(
+        {'key1': 'value1', 'key2': true, 'key3': 3, 'key4': 3.14});
+  }
+
+  _getCustomAttributes() async {
+    await AGCRemoteConfig.instance.getCustomAttributes();
   }
 
   @override
@@ -74,23 +87,37 @@ class _HomePageState extends State<HomePage> {
               MaterialButton(
                   onPressed: _buttonOneClicked,
                   color: Colors.blue,
-                  child: Text(
+                  child: const Text(
                     'Mode 1:Fetch And Activate Immediately',
                     style: TextStyle(color: Colors.white),
                   )),
               MaterialButton(
                   onPressed: _buttonTwoClicked,
                   color: Colors.blue,
-                  child: Text(
+                  child: const Text(
                     'Mode 2:Fetch And Activate Next Time',
                     style: TextStyle(color: Colors.white),
                   )),
-              Text('Please clear data before switching modes'),
+              const Text('Please clear data before switching modes'),
               MaterialButton(
                   onPressed: _clearData,
                   color: Colors.blue,
-                  child: Text(
+                  child: const Text(
                     'Clear Data',
+                    style: TextStyle(color: Colors.white),
+                  )),
+              MaterialButton(
+                  onPressed: _buttonCustomClicked,
+                  color: Colors.blue,
+                  child: const Text(
+                    'setCustomAttributes',
+                    style: TextStyle(color: Colors.white),
+                  )),
+              MaterialButton(
+                  onPressed: _getCustomAttributes,
+                  color: Colors.blue,
+                  child: const Text(
+                    'getCustomAttributes',
                     style: TextStyle(color: Colors.white),
                   )),
             ],
@@ -102,6 +129,8 @@ class _HomePageState extends State<HomePage> {
 }
 
 class PageModeOne extends StatefulWidget {
+  const PageModeOne({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return _PageModeOneState();
@@ -109,7 +138,7 @@ class PageModeOne extends StatefulWidget {
 }
 
 class _PageModeOneState extends State<PageModeOne> {
-  Map _allValue;
+  Map? _allValue;
 
   @override
   void initState() {
@@ -118,20 +147,21 @@ class _PageModeOneState extends State<PageModeOne> {
   }
 
   _fetchAndActivateImmediately() async {
-    await AGCRemoteConfig.instance.fetch().catchError((error)=>log(error.toString()));
+    await AGCRemoteConfig.instance
+        .fetch()
+        .catchError((error) => log(error.toString()));
     await AGCRemoteConfig.instance.applyLastFetched();
-    Map value = await AGCRemoteConfig.instance.getMergedAll();
+    Map? value = await AGCRemoteConfig.instance.getMergedAll();
     setState(() {
       _allValue = value;
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Mode 1'),
+          title: const Text('Mode 1'),
         ),
         body: Center(
           child: Text('$_allValue'),
@@ -140,6 +170,8 @@ class _PageModeOneState extends State<PageModeOne> {
 }
 
 class PageModeTwo extends StatefulWidget {
+  const PageModeTwo({Key? key}) : super(key: key);
+
   @override
   State<StatefulWidget> createState() {
     return _PageModeTwoState();
@@ -147,7 +179,7 @@ class PageModeTwo extends StatefulWidget {
 }
 
 class _PageModeTwoState extends State<PageModeTwo> {
-  Map _allValue;
+  Map? _allValue;
 
   @override
   void initState() {
@@ -157,18 +189,20 @@ class _PageModeTwoState extends State<PageModeTwo> {
 
   _fetchAndActivateNextTime() async {
     await AGCRemoteConfig.instance.applyLastFetched();
-    Map value = await AGCRemoteConfig.instance.getMergedAll();
+    Map? value = await AGCRemoteConfig.instance.getMergedAll();
     setState(() {
       _allValue = value;
     });
-    await AGCRemoteConfig.instance.fetch().catchError((error)=>log(error.toString()));
+    await AGCRemoteConfig.instance
+        .fetch()
+        .catchError((error) => log(error.toString()));
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('Mode 2'),
+          title: const Text('Mode 2'),
         ),
         body: Center(
           child: Text('$_allValue'),
