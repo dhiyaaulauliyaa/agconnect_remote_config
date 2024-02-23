@@ -21,6 +21,3 @@ flutter:
       android:
         package: com.huawei.agconnectremoteconfig
         pluginClass: AGConnectRemoteConfigPlugin
-      ios:
-        pluginClass: AGConnectRemoteConfigPlugin
-
