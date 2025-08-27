@@ -24,7 +24,8 @@ rootProject.allprojects {
 apply plugin: 'com.android.library'
 
 android {
-     compileSdkVersion 30
+    namespace "com.huawei.agconnect.remoteconfig"
+    compileSdkVersion 30
     buildToolsVersion "30.0.3"
 
     defaultConfig {
